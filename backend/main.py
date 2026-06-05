@@ -3,9 +3,8 @@ import os
 from contextlib import asynccontextmanager
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 sys.path.insert(0, os.path.join(os.path.dirname(__file__)))
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 from database import engine, Base, SessionLocal
 from routes.prices import router as prices_router
@@ -36,11 +35,18 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, 
 
 app.include_router(prices_router, prefix="/api")
 
-app.mount("/static", StaticFiles(directory="frontend"), name="static")
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+@app.get("/static/css/style.css")
+def serve_css():
+    path = os.path.join(BASE_DIR, "frontend", "css", "style.css")
+    with open(path, "r", encoding="utf-8") as f:
+        content = f.read()
+    return Response(content=content, media_type="text/css")
 
 @app.get("/")
 def read_root():
-    frontend_path = os.path.join(os.path.dirname(__file__), "..", "frontend", "index.html")
-    with open(frontend_path, "r", encoding="utf-8") as f:
+    path = os.path.join(BASE_DIR, "frontend", "index.html")
+    with open(path, "r", encoding="utf-8") as f:
         content = f.read()
     return HTMLResponse(content=content)
