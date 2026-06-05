@@ -6,7 +6,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__)))
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import HTMLResponse
 from database import engine, Base, SessionLocal
 from routes.prices import router as prices_router
 from models import Price
@@ -40,4 +40,7 @@ app.mount("/static", StaticFiles(directory="frontend"), name="static")
 
 @app.get("/")
 def read_root():
-    return FileResponse("frontend/index.html")
+    frontend_path = os.path.join(os.path.dirname(__file__), "..", "frontend", "index.html")
+    with open(frontend_path, "r", encoding="utf-8") as f:
+        content = f.read()
+    return HTMLResponse(content=content)
